@@ -8,7 +8,7 @@ Vagrant.configure("2") do |config|
     node.ssh.insert_key = false
     node.vm.post_up_message = "N9kv1 up"
     node.vm.box_check_update = false
-    node.vm.provision "shell", inline: "vsh -r /var/tmp/set_vsh_as_default.cmd"
+    # node.vm.provision "shell", inline: "vsh -r /var/tmp/set_vsh_as_default.cmd"
 
     config.vm.provider "virtualbox" do |vb|
       # vb.memory = "4096"
@@ -35,7 +35,7 @@ Vagrant.configure("2") do |config|
     node.ssh.insert_key = false
     node.vm.post_up_message = "N9kv2 up"
     node.vm.box_check_update = false
-    node.vm.provision "shell", inline: "vsh -r /var/tmp/set_vsh_as_default.cmd"
+    # node.vm.provision "shell", inline: "vsh -r /var/tmp/set_vsh_as_default.cmd"
 
     # n9000v defaults to 8G RAM, but only needs 4G
     config.vm.provider "virtualbox" do |vb|
