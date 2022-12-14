@@ -1,71 +1,80 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-# All Vagrant configuration is done below. The "2" in Vagrant.configure
-# configures the configuration version (we support older styles for
-# backwards compatibility). Please don't change it unless you know what
-# you're doing.
 Vagrant.configure("2") do |config|
-  # The most common configuration options are documented and commented below.
-  # For a complete reference, please see the online documentation at
-  # https://docs.vagrantup.com.
+  config.vm.define  "n9kv1" do |node|
+    node.vm.box = "nxos/9.3.5"
+    node.vm.boot_timeout = 600
+    node.ssh.insert_key = false
+    node.vm.post_up_message = "N9kv1 up"
+    node.vm.box_check_update = false
+    node.vm.provision "shell", inline: "vsh -r /var/tmp/set_vsh_as_default.cmd"
 
-  # Every Vagrant development environment requires a box. You can search for
-  # boxes at https://vagrantcloud.com/search.
-  config.vm.box = "base"
-  config.vm.boot_timeout = 600
+    config.vm.provider "virtualbox" do |vb|
+      # vb.memory = "4096"
+      # vb.customize ['modifyvm', :id, '--uart1', '0x3F8', 4, '--uartmode1', 'disconnected']
+      # vb.customize ['modifyvm', :id, '--uart2', '0x2F8', 3, '--uartmode2', 'disconnected']
+      vb.customize ["modifyvm",:id,"--nicpromisc2","allow-all"]
+      vb.customize ["modifyvm",:id,"--nicpromisc3","allow-all"]
+    end
 
-  # Disable automatic box update checking. If you disable this, then
-  # boxes will only be checked for updates when the user runs
-  # `vagrant box outdated`. This is not recommended.
-  # config.vm.box_check_update = false
+    #  eth1/1 connected to link2
+    node.vm.network :private_network, virtualbox__intnet: "link2", auto_config: false
+    node.vm.network :private_network, virtualbox__intnet: "link3", auto_config: false
 
-  # Create a forwarded port mapping which allows access to a specific port
-  # within the machine from a port on the host machine. In the example below,
-  # accessing "localhost:8080" will access port 80 on the guest machine.
-  # NOTE: This will enable public access to the opened port
-  # config.vm.network "forwarded_port", guest: 80, host: 8080
+    config.vm.network :forwarded_port, guest: 22, host: 3122, id: 'ssh' , auto_config: false
+    # Forward API Ports
+    config.vm.network :forwarded_port, guest: 80, host: 3180, id: 'http', auto_correct: true
+    config.vm.network :forwarded_port, guest: 443, host: 3143, id: 'https', auto_correct: true
+    config.vm.network :forwarded_port, guest: 830, host: 3130, id: 'netconf', auto_correct: true
+  end
 
-  # Create a forwarded port mapping which allows access to a specific port
-  # within the machine from a port on the host machine and only allow access
-  # via 127.0.0.1 to disable public access
-  # config.vm.network "forwarded_port", guest: 80, host: 8080, host_ip: "127.0.0.1"
+  config.vm.define "n9kv2" do |node|
+    node.vm.box =  "nxos/9.3.5"
+    node.vm.boot_timeout = 600
+    node.ssh.insert_key = false
+    node.vm.post_up_message = "N9kv2 up"
+    node.vm.box_check_update = false
+    node.vm.provision "shell", inline: "vsh -r /var/tmp/set_vsh_as_default.cmd"
 
-  # Create a private network, which allows host-only access to the machine
-  # using a specific IP.
-  # config.vm.network "private_network", ip: "192.168.33.10"
+    # n9000v defaults to 8G RAM, but only needs 4G
+    config.vm.provider "virtualbox" do |vb|
+      # Customize the amount of memory on the VM:
+      # vb.memory = "4096"
+      # Disconnect serial port to avoid conflict
+      # vb.customize ['modifyvm', :id, '--uart1', '0x3F8', 4, '--uartmode1', 'disconnected']
+      # vb.customize ['modifyvm', :id, '--uart2', '0x2F8', 3, '--uartmode2', 'disconnected']
+      vb.customize ["modifyvm",:id,"--nicpromisc2","allow-all"]
+      vb.customize ["modifyvm",:id,"--nicpromisc3","allow-all"]
+    end
 
-  # Create a public network, which generally matched to bridged network.
-  # Bridged networks make the machine appear as another physical device on
-  # your network.
-  # config.vm.network "public_network"
+    # eth1/1 connected to link2,
+    node.vm.network :private_network, virtualbox__intnet: "link2", auto_config: false
+    node.vm.network :private_network, virtualbox__intnet: "link3", auto_config: false
 
-  # Share an additional folder to the guest VM. The first argument is
-  # the path on the host to the actual folder. The second argument is
-  # the path on the guest to mount the folder. And the optional third
-  # argument is a set of non-required options.
-  # config.vm.synced_folder "../data", "/vagrant_data"
+    # Explicity set SSH Port to avoid conflict and for provisioning
+    config.vm.network :forwarded_port, guest: 22, host: 3222, id: 'ssh', auto_correct: true
 
-  # Provider-specific configuration so you can fine-tune various
-  # backing providers for Vagrant. These expose provider-specific options.
-  # Example for VirtualBox:
-  #
-  # config.vm.provider "virtualbox" do |vb|
-  #   # Display the VirtualBox GUI when booting the machine
-  #   vb.gui = true
-  #
-  #   # Customize the amount of memory on the VM:
-  #   vb.memory = "1024"
-  # end
-  #
-  # View the documentation for the provider you are using for more
-  # information on available options.
+    # Forward API Ports
+    config.vm.network :forwarded_port, guest: 80, host: 3280, id: 'http', auto_correct: true
+    config.vm.network :forwarded_port, guest: 443, host: 3243, id: 'https', auto_correct: true
+    config.vm.network :forwarded_port, guest: 830, host: 3230, id: 'netconf', auto_correct: true
+  end
 
-  # Enable provisioning with a shell script. Additional provisioners such as
-  # Ansible, Chef, Docker, Puppet and Salt are also available. Please see the
-  # documentation for more information about their specific syntax and use.
-  # config.vm.provision "shell", inline: <<-SHELL
-  #   apt-get update
-  #   apt-get install -y apache2
-  # SHELL
+  config.vm.define "ubuntu" do |node|
+    node.vm.box = "ubuntu/focal64"
+    node.vm.post_up_message = "Ubuntu up"
+
+    config.vm.provider "virtualbox" do |vb|
+      # vb.memory = "4096"
+      # vb.customize ['modifyvm', :id, '--uart1', '0x3F8', 4, '--uartmode1', 'disconnected']
+      # vb.customize ['modifyvm', :id, '--uart2', '0x2F8', 3, '--uartmode2', 'disconnected']
+      vb.customize ["modifyvm",:id,"--nicpromisc2","allow-all"]
+      vb.customize ["modifyvm",:id,"--nicpromisc3","allow-all"]
+    end
+
+    node.vm.network :private_network, virtualbox__intnet: "link3", auto_config: false
+
+    config.vm.network :forwarded_port, guest: 22, host: 3322, id: 'ssh', auto_correct: true
+  end
 end
