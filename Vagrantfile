@@ -22,11 +22,11 @@ Vagrant.configure("2") do |config|
     node.vm.network :private_network, virtualbox__intnet: "link2", auto_config: false
     node.vm.network :private_network, virtualbox__intnet: "link3", auto_config: false
 
-    config.vm.network :forwarded_port, guest: 22, host: 3122, id: 'ssh' , auto_config: false
+    node.vm.network :forwarded_port, guest: 22, host: 3122, id: 'ssh' , auto_config: false
     # Forward API Ports
-    config.vm.network :forwarded_port, guest: 80, host: 3180, id: 'http', auto_correct: true
-    config.vm.network :forwarded_port, guest: 443, host: 3143, id: 'https', auto_correct: true
-    config.vm.network :forwarded_port, guest: 830, host: 3130, id: 'netconf', auto_correct: true
+    node.vm.network :forwarded_port, guest: 80, host: 3180, id: 'http', auto_correct: true
+    node.vm.network :forwarded_port, guest: 443, host: 3143, id: 'https', auto_correct: true
+    node.vm.network :forwarded_port, guest: 830, host: 3130, id: 'netconf', auto_correct: true
   end
 
   config.vm.define "n9kv2" do |node|
@@ -53,12 +53,12 @@ Vagrant.configure("2") do |config|
     node.vm.network :private_network, virtualbox__intnet: "link3", auto_config: false
 
     # Explicity set SSH Port to avoid conflict and for provisioning
-    config.vm.network :forwarded_port, guest: 22, host: 3222, id: 'ssh', auto_correct: true
+    node.vm.network :forwarded_port, guest: 22, host: 3222, id: 'ssh', auto_correct: true
 
     # Forward API Ports
-    config.vm.network :forwarded_port, guest: 80, host: 3280, id: 'http', auto_correct: true
-    config.vm.network :forwarded_port, guest: 443, host: 3243, id: 'https', auto_correct: true
-    config.vm.network :forwarded_port, guest: 830, host: 3230, id: 'netconf', auto_correct: true
+    node.vm.network :forwarded_port, guest: 80, host: 3280, id: 'http', auto_correct: true
+    node.vm.network :forwarded_port, guest: 443, host: 3243, id: 'https', auto_correct: true
+    node.vm.network :forwarded_port, guest: 830, host: 3230, id: 'netconf', auto_correct: true
   end
 
   config.vm.define "ubuntu" do |node|
@@ -75,6 +75,6 @@ Vagrant.configure("2") do |config|
 
     node.vm.network :private_network, virtualbox__intnet: "link3", auto_config: false
 
-    config.vm.network :forwarded_port, guest: 22, host: 3322, id: 'ssh', auto_correct: true
+    node.vm.network :forwarded_port, guest: 22, host: 3322, id: 'ssh', auto_correct: true
   end
 end
